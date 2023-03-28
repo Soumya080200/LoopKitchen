@@ -1,0 +1,50 @@
+Store Monitoring
+Models:
+StoreStatus{
+	Id,
+	Store_id,
+	Status,
+	Time_stamp
+}
+
+MenuHour{
+	Id,
+	Store_id,
+	Start_time_local,
+	End_time_local,
+ 	day
+}
+
+Store{
+	Store_id,
+	Time_zone_str
+}
+Report{
+	Id,
+	status
+}
+
+API:
+1.	‘/trigger_report’
+Here a new Report is created and the status is set to Running. And Generate Report is run.
+After completion of the report, a csv file is created by the name report_id.csv (to keep the name unique) and the status in the Report DB is changed to Completed. 
+2.	‘get_report(report_id):
+Here we check the status of the report from DB.
+i.	If its Complete return corresponding csv file.
+ii.	Otherwise we return status as Running
+
+Find Uptime and Downtime Logic:
+
+Find_uptime(Store, start_time, end_time):
+
+The logic is to get all time stamps from store_status that are less than start_time and end_time. With this data, we convert the time_stamp to a float value as number of seconds from start_time. We interpolate on this data with x = array of time stamp values and y = 1(status=active) or 0(status=inactive).
+Then we integrate on this function between start time and end time to get uptime.
+Downtime = endtime – starttime – uptime
+
+1.	Uptime_last_hour:	Here we get the time stamps of store for the current day and integrate the interpolated function for the last one hour.
+2.	Uptime_last_day:	Here we get the time stamps of store for the current day and integrate the interpolated function between start_time and end_time from Menu Hour of the store. 
+3.	Uptime_last_week:	Here we basically add total time for the up_time over last seven days by calling up_time_last_day().
+
+
+Future Scope:
+We can cache the Report model data for faster response. We can come with better solution like using S3 bucket to store the CSV files and have a cron job to delete the old csv files for better memory optimisation.
